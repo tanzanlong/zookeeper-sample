@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.baibei.dao.DataRequestDetailMapper" >
+
+
+    <insert id="insert" parameterType="com.baibei.vo.RequestDetailInfo">
+        Insert into TBL_WP_DATA_REQUEST_DETAIL
+        (request_id, service_key, Param_Info, access_ip, CREATE_DATE)
+        values
+        (seq_data_request_detail.NEXTVAL  , #{serviceKey,jdbcType=VARCHAR},#{paramInfo,jdbcType=VARCHAR},
+        #{accessIP,jdbcType=VARCHAR},#{accessDate,jdbcType=TIMESTAMP})
+
+    </insert>
+
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.baibei.dao.QueryAuthMapper" >
+    <resultMap id="queryAuthInfoResultMap" type="com.baibei.vo.QueryAuthInfo" >
+        <result column="AUTH_ID" property="authID" jdbcType="BIGINT" />
+        <result column="MEMBER_UNITS_NO" property="memberUnitsNO" jdbcType="VARCHAR" />
+        <result column="MEMBER_UNITS_TYPE" property="memberUnitsType" jdbcType="INTEGER" />
+        <result column="ENCRYPTION_KEY" property="encryptionKey" jdbcType="VARCHAR" />
+        <result column="AUTH_STATE" property="authState" jdbcType="INTEGER" />
+        <result column="CREATE_DATE" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+
+    <select id="queryAllAuth" resultMap="queryAuthInfoResultMap">
+        SELECT * FROM TBL_WP_QUERY_AUTH
+    </select>
+
+    <select id="getQueryAuthInfoBy" resultMap="queryAuthInfoResultMap" parameterType="com.baibei.dto.ValidRequest" >
+        SELECT * FROM TBL_WP_QUERY_AUTH t WHERE 1=1
+        <if test="validRequest.memberUnitsNO != null">
+            and t.MEMBER_UNITS_NO = #{validRequest.memberUnitsNO,jdbcType=VARCHAR}
+        </if>
+        <if test="validRequest.memberUnitsType != null">
+            and t.MEMBER_UNITS_TYPE = #{validRequest.memberUnitsType,jdbcType=INTEGER}
+        </if>
+        <if test="validRequest.encryptionKey != null">
+            and t.ENCRYPTION_KEY = #{validRequest.encryptionKey,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <insert id="insertQueryAuth" parameterType="com.baibei.vo.QueryAuthInfo">
+        Insert into TBL_WP_QUERY_AUTH
+        (AUTH_ID, MEMBER_UNITS_NO, MEMBER_UNITS_TYPE, ENCRYPTION_KEY, AUTH_STATE, CREATE_DATE)
+        values
+        (SEQ_QUERY_AUTH.NEXTVAL ,
+        #{memberUnitsNO,jdbcType=VARCHAR},
+        #{memberUnitsType,jdbcType=INTEGER},
+        #{encryptionKey,jdbcType=VARCHAR},
+        #{authState,jdbcType=INTEGER},
+        #{createTime,jdbcType=TIMESTAMP})
+    </insert>
+
+
+
+
+</mapper>
+

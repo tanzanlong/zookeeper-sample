@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.baibei.dao.StatisticsMapper" >
+    <resultMap id="userBaseInfoResultMap" type="com.baibei.vo.UserBaseInfo" >
+        <id column="userID" property="userID" jdbcType="INTEGER" />
+        <result column="wid" property="wxID" jdbcType="VARCHAR" />
+        <result column="userName" property="userName" jdbcType="VARCHAR" />
+        <result column="sex" property="sex" jdbcType="INTEGER" />
+        <result column="flag" property="flag" jdbcType="VARCHAR" />
+        <result column="createdTime" property="createdTime" jdbcType="VARCHAR" />
+        <result column="realName" property="realName" jdbcType="VARCHAR" />
+        <result column="nickName" property="nickName" jdbcType="VARCHAR" />
+        <result column="orgCode" property="orgCode" jdbcType="VARCHAR" />
+        <result column="orgnName" property="orgnName" jdbcType="VARCHAR" />
+        <result column="memberunitsNO" property="memberunitsNO" jdbcType="VARCHAR" />
+        <result column="memberunitsName" property="memberunitsName" jdbcType="VARCHAR" />
+        <result column="appName" property="appName" jdbcType="VARCHAR" />
+        <result column="tradeDay" property="tradeDay" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="userMoneyBaseInfoResultMap" type="com.baibei.vo.UserMoenyBaseInfo" >
+        <id column="userID" property="userID" jdbcType="INTEGER" />
+        <result column="wid" property="wxID" jdbcType="VARCHAR" />
+        <result column="bankNo" property="bankNo" jdbcType="VARCHAR" />
+        <result column="channel" property="channel" jdbcType="INTEGER" />
+        <result column="buymoney" property="money" jdbcType="DECIMAL" />
+        <result column="orderType" property="orderType" jdbcType="INTEGER" />
+        <result column="addTime" property="addTime" jdbcType="VARCHAR" />
+        <result column="selltime" property="opsTime" jdbcType="VARCHAR" />
+        <result column="tradeDay" property="tradeDay" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="userBalanceBaseInfoResultMap" type="com.baibei.vo.UserBalanceBaseInfo" >
+        <result column="wid" property="wxID" jdbcType="VARCHAR" />
+        <result column="balance" property="balance" jdbcType="DECIMAL" />
+        <result column="sumbuy" property="sumbuy" jdbcType="DECIMAL" />
+        <result column="profits" property="profits" jdbcType="DECIMAL" />
+        <result column="fees" property="fees" jdbcType="DECIMAL" />
+        <result column="recharges" property="recharges" jdbcType="DECIMAL" />
+        <result column="withdraws" property="withdraws" jdbcType="DECIMAL" />
+        <result column="tradeDay" property="tradeDay" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="userBuyBaseInfoResultMap" type="com.baibei.vo.UserBuyBaseInfo" >
+        <result column="wid" property="wxID" jdbcType="VARCHAR" />
+        <result column="addTime" property="addTime" jdbcType="VARCHAR" />
+        <result column="buyPrice" property="buyPrice" jdbcType="DECIMAL" />
+        <result column="count" property="count" jdbcType="INTEGER" />
+        <result column="couponFlagStr" property="couponFlagStr" jdbcType="VARCHAR" />
+        <result column="direction" property="direction" jdbcType="VARCHAR" />
+        <result column="fee" property="fee" jdbcType="DECIMAL" />
+        <result column="orderType" property="orderType" jdbcType="INTEGER" />
+        <result column="productName" property="productName" jdbcType="VARCHAR" />
+        <result column="profitLess" property="profitLess" jdbcType="DECIMAL" />
+        <result column="profitOrLess" property="profitOrLess" jdbcType="VARCHAR" />
+        <result column="toplimit" property="toplimit" jdbcType="DECIMAL" />
+        <result column="bottomlimit" property="bottomlimit" jdbcType="DECIMAL" />
+        <result column="sellPrice" property="sellPrice" jdbcType="DECIMAL" />
+        <result column="sellTime" property="sellTime" jdbcType="VARCHAR" />
+        <result column="tradeDay" property="tradeDay" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="custCouponInfoResultMap" type="com.baibei.vo.CustCouponInfo" >
+        <result column="wid" property="wxID" jdbcType="VARCHAR" />
+        <result column="name" property="channelName" jdbcType="VARCHAR" />
+        <result column="couponName" property="couponName" jdbcType="VARCHAR" />
+        <result column="endTime" property="endTime" jdbcType="VARCHAR" />
+        <result column="startTime" property="startTime" jdbcType="VARCHAR" />
+        <result column="isUse" property="isUse" jdbcType="INTEGER" />
+        <result column="tradeDay" property="tradeDay" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <select id="queryUserBaseInfosBy" resultMap="userBaseInfoResultMap" parameterType="com.baibei.dto.StatisticsReq" >
+        SELECT tr.*  from
+        (SELECT ROWNUM ROWN,C.USERID ,
+        C.USERNAME,
+        C.SEX,
+        CASE
+        WHEN C.FLAG IN (1, 201) THEN
+        '正常'
+        ELSE
+        '冻结'
+        END FLAG,
+        TO_CHAR(C.CREATEDTIME, 'yyyy-mm-dd hh24:mi:ss') CREATEDTIME,
+        C.wid,
+        B.REALNAME,
+        B.NICKNAME,
+        O.ORGNAME,
+        O.ORGCODE,
+        U.MEMBERUNITSNO,
+        U.MEMBERUNITSNAME,
+        APP.APPNAME,
+        TO_CHAR(C.CREATEDTIME - INTERVAL '6' HOUR, 'yyyy-mm-dd') tradeDay
+        FROM TBL_WP_CUSTOMER C,
+        TBL_WP_CUSTOMER_REF F,
+        TBL_WP_ORG O,
+        (SELECT *
+        FROM TBL_WP_BROKER T
+        WHERE T.TYPE = 2
+        AND T.FLAG = 1) B,
+        TBL_WP_MEMBER_UNITS U,
+        TBL_WP_APP APP
+        WHERE C.WID = F.WID
+        <![CDATA[ AND SYSDATE >= F.STARTTIME ]]>
+        <![CDATA[ AND SYSDATE <= NVL(F.ENDTIME, SYSDATE) ]]>
+        AND F.AGENTID = B.OPENID(+)
+        AND F.ORGID = O.ID
+        <if test="statisticsReq.memberNO != null">
+          and U.MEMBERUNITSNO = #{statisticsReq.memberNO,jdbcType=VARCHAR}
+        </if>
+        AND C.MEMBERUNITID = U.ID
+        AND U.ID = APP.MEMBERUNITID(+)
+        <![CDATA[AND C.CREATEDTIME>=to_date(#{statisticsReq.startTime},'yyyy-mm-dd hh24:mi:ss') and C.CREATEDTIME<=to_date(#{statisticsReq.endTime},'yyyy-mm-dd hh24:mi:ss')]]>
+        <![CDATA[) tr  where  tr.rown > #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1) and tr.rown <=(#{statisticsReq.pageSize} +  #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1))]]>
+    </select>
+    <select id="queryUserMoenyInfosBy" resultMap="userMoneyBaseInfoResultMap" parameterType="com.baibei.dto.StatisticsReq" >
+        select t.* from
+        (
+        select rownum as rown,  t_c.userid, t_c.wid, o.ORDERTYPE,o.CHANNEL,
+        o.BUYMONEY,TO_CHAR(o.addtime, 'yyyy-mm-dd hh24:mi:ss') addtime,TO_CHAR(o.selltime, 'yyyy-mm-dd hh24:mi:ss') selltime ,TO_CHAR(o.selltime - INTERVAL '6' HOUR, 'yyyy-mm-dd') as tradeDay ,
+        (case when o.ORDERTYPE in (11,12,13,14)  then o.MERSEQID  else o.ORDERNUM end) bankNo
+
+        from
+        (select  c.userid, c.wid from tbl_wp_customer c where c.MEMBERUNITID in
+        (select m.id from tbl_wp_member_units m where 1=1
+        <if test="statisticsReq.memberNO != null">
+            and m.MEMBERUNITSNO = #{statisticsReq.memberNO,jdbcType=VARCHAR}
+        </if>
+        ) ) t_c
+        left join tbl_wp_order o  on  o.wid = t_c.wid
+        <![CDATA[ where o.ORDERTYPE in (8, 9,10,11,12,13,14) and o.SELLTIME>=to_date(#{statisticsReq.startTime},'yyyy-mm-dd hh24:mi:ss') and o.SELLTIME<=to_date(#{statisticsReq.endTime},'yyyy-mm-dd hh24:mi:ss')) t ]]>
+        <![CDATA[ where  t.rown > #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1) and t.rown <=(#{statisticsReq.pageSize} +  #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1))  ]]>
+    </select>
+
+    <select id="queryUserBalanceInfosBy" resultMap="userBalanceBaseInfoResultMap" parameterType="com.baibei.dto.StatisticsReq" >
+        select t3.*, to_char(sysdate-1,'yyyy-mm-dd') tradeDay from
+        (
+        select rownum rown,b.balance,t2.*  from
+        (
+        select
+        max(t1.wid) wid,
+        sum(case when t1.ORDERTYPE in (3,4,5,6,7)  then t1.BUYMONEY  else 0 end) sumbuy,
+        sum(case when t1.ORDERTYPE in (3,4,5,6,7)  then t1.PLAMOUNT  else 0 end) profits,
+        sum(case when t1.ORDERTYPE in (3,4,5,6,7)  then t1.fee else 0 end) fees,
+        sum(case when t1.ORDERTYPE in (9)  then t1.buymoney  else 0 end) recharges,
+        sum(case when t1.ORDERTYPE in (12,13)  then t1.buymoney  else 0 end) withdraws
+        from
+        (
+        select t_c.wid,o.Fee ,o.PLAMOUNT ,o.BUYMONEY, o.ORDERTYPE
+        from
+        (select  c.userid, c.wid from tbl_wp_customer c where c.MEMBERUNITID in
+        (select m.id from tbl_wp_member_units m  where 1=1
+        <if test="statisticsReq.memberNO != null">
+            and m.MEMBERUNITSNO = #{statisticsReq.memberNO,jdbcType=VARCHAR}
+        </if>
+        ) ) t_c
+        left join tbl_wp_order o  on  o.wid = t_c.wid
+        <![CDATA[ where o.ORDERTYPE in (3,4,5,6,7,9,12,13)   and o.SELLTIME>=to_date('2015-10-01 13:23:44','yyyy-mm-dd hh24:mi:ss') and o.SELLTIME<=to_date('2016-12-2113:23:44','yyyy-mm-dd hh24:mi:ss')]]>
+        ) t1  group by t1.wid
+        ) t2 left join tbl_wp_customer_balance b on  t2.wid = b.wid
+        ) t3
+        <![CDATA[ where t3.rown > #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1) and t3.rown <=(#{statisticsReq.pageSize} +  #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1))]]>
+    </select>
+
+    <select id="queryUserBuyInfosBy" resultMap="userBuyBaseInfoResultMap" parameterType="com.baibei.dto.StatisticsReq" >
+        select t1.wid,TO_CHAR(t1.addtime, 'yyyy-mm-dd hh24:mi:ss') addtime,t1.buyprice,t1.count,t1.fee,t1.BUYDIRECTION ,t1.PLAMOUNT,t1.TOPLIMIT ,t1.BOTTOMLIMIT,t1.ORDERTYPE,t1.SELLPRICE,
+        TO_CHAR(t1.selltime, 'yyyy-mm-dd hh24:mi:ss') selltime,to_char(t1.addtime- INTERVAL '6' HOUR, 'yyyy-mm-dd') tradeDay, t1.couponflag,
+        t1.NAME || '(' || TO_CHAR(t1.WEIGHT, 'FM9999999990.0') || t1.SPEC || ')' productName,
+        (case when t1.PLAMOUNT > 0  then '盈' else  '亏' end) profitOrLess,
+        (case when t1.BUYDIRECTION = 1  then '空' else  '多' end) direction,
+        (case when t1.couponflag = 1  then '是赢家券' else  '不是是赢家券' end) couponFlagStr
+        from
+        (
+        select rownum rown,t.*,p.name,p.WEIGHT,p.SPEC from
+        (select  o.*   from  tbl_wp_order o where o.ORDERTYPE in (3,4,5,6,7)
+        <![CDATA[and o.SELLTIME>=to_date(#{statisticsReq.startTime},'yyyy-mm-dd hh24:mi:ss') and o.SELLTIME<=to_date(#{statisticsReq.endTime},'yyyy-mm-dd hh24:mi:ss')]]>
+        and o.wid in
+        (select c.wid from tbl_wp_customer c where c.MEMBERUNITID in
+        (select m.id from tbl_wp_member_units m  where 1=1
+        <if test="statisticsReq.memberNO != null">
+            and m.MEMBERUNITSNO = #{statisticsReq.memberNO,jdbcType=VARCHAR}
+        </if>
+        ))) t
+        left join tbl_wp_product p  on  p.productid = t.productid) t1
+        <![CDATA[where t1.rown > #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1) and t1.rown <=(#{statisticsReq.pageSize} +  #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1))]]>
+    </select>
+
+    <select id="queryCustCouponInfosBy" resultMap="custCouponInfoResultMap" parameterType="com.baibei.dto.StatisticsReq" >
+        select t3.* from
+        (
+        select rownum rown,t2.*, twc.couponname   from
+        (
+        select t1.*,twa.name  from
+        (
+        select tcc.WID, to_char(tcc.ENDTIME, 'yyyy-mm-dd hh24:mi:ss') endTime,to_char(tcc.STARTTIME, 'yyyy-mm-dd hh24:mi:ss') startTime,tcc.COUPONID,tcc.ISUSE,TO_CHAR(tcc.STARTTIME- INTERVAL '6' HOUR, 'yyyy-mm-dd') tradeDay,tcc.channel
+
+        from tbl_wp_customer_coupon  tcc
+        <![CDATA[where tcc.starttime>=to_date(#{statisticsReq.startTime},'yyyy-mm-dd hh24:mi:ss') and tcc.starttime<=to_date(#{statisticsReq.endTime},'yyyy-mm-dd hh24:mi:ss')]]>
+        and
+        tcc.wid in
+        (select c.wid  from tbl_wp_customer c where c.MEMBERUNITID in
+        (select m.id from tbl_wp_member_units m  where 1=1
+        <if test="statisticsReq.memberNO != null">
+            and m.MEMBERUNITSNO = #{statisticsReq.memberNO,jdbcType=VARCHAR}
+        </if>
+        ))) t1
+        left join tbl_wp_action  twa on t1.channel = twa.id
+        ) t2
+        left join tbl_wp_coupon twc on twc.couponid = t2.COUPONID) t3
+        <![CDATA[where t3.rown > #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1) and t3.rown <=(#{statisticsReq.pageSize} +  #{statisticsReq.pageSize}*(#{statisticsReq.pageNO}-1))]]>
+    </select>
+
+</mapper>
