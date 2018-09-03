@@ -1,4 +1,4 @@
-package com.baibei.wine.paycenter;
+package com.tan.zk;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
