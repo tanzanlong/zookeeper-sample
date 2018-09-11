@@ -9,6 +9,6 @@ public class ZookeeperRegistryTest {
         ZookeeperRegistry ZookeeperRegistry=new ZookeeperRegistry(url,zookeeperTransporter);
       //  ZookeeperRegistry.doRegister("/tanpubT/pay", false);
         ZookeeperRegistry.doSubscribe("/pay");
-        ZookeeperRegistry.doRegister("/tanpubT/pay/0001", false);
+        //ZookeeperRegistry.doRegister("/tanpubT/pay/0001", false);
     }
 }
